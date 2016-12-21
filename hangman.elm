@@ -45,23 +45,39 @@ type Msg
   = Guess String
 
 
-mapLetter : Int -> Char -> Letter -> (Letter, Int)
-mapLetter misses guess letter =
-    case letter.letter == guess && !letter.guessed of
-        false -> (letter, (misses + 1))
-        true -> ( { letter | guessed = true }, misses)
+mapLetter : Letter -> (List Letter, Int, Char) -> (List Letter, Int, Char)
+mapLetter letter (letters, misses, guess) =
+    let
+        miss = (letter.letter == guess) && (not letter.guessed)
+        new_letter = case miss of
+            False -> letter
+            True -> { letter | guessed = True }
+        new_letters = letters ++ [ new_letter ]
+        new_misses = case miss of
+            False -> misses
+            True -> misses + 1
+    in
+       (new_letters, new_misses, guess)
 
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
-    Guess guesses ->
-        let
-            accum : Int
-            new_misses = case 
-      { model | 
-        
+    Guess guess_str ->
+        case String.uncons (String.reverse guess_str) of
+            Just (c, rest) -> cleanUpdate c model
+            Nothing -> model
 
+cleanUpdate : Char -> Model -> Model
+cleanUpdate guess model =
+    let
+        (new_letters, new_misses, same_guess) =
+            List.foldl mapLetter ([], model.misses, guess) model.letters
+    in
+        { model |
+            misses = new_misses,
+            letters = new_letters
+        }
 
 
 -- VIEW
@@ -74,7 +90,7 @@ view model =
       h1 [] [ text "Hangman" ]
       , h2 [] [ text (toString model.misses) ]
       , stage model
-      , input [ placeholder "Text to reverse", onInput Guess ] []
+      , input [ placeholder "Guess", onInput Guess ] []
       , div [] [ text "TBD" ]
     ]
 
