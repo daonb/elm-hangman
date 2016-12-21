@@ -1,4 +1,4 @@
-import Html exposing (Html, div, h1, h2, input, text, li, ul)
+import Html exposing (Html, div, h1, h2, input, text, ul, li)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import String
@@ -46,18 +46,18 @@ type Msg
 
 
 mapLetter : Letter -> (List Letter, Int, Char) -> (List Letter, Int, Char)
-mapLetter letter (letters, misses, guess) =
+mapLetter letter (letters, hits, guess) =
     let
-        miss = (letter.letter == guess) && (not letter.guessed)
-        new_letter = case miss of
+        hit = (letter.letter == guess) && (not letter.guessed)
+        new_letter = case hit of
             False -> letter
             True -> { letter | guessed = True }
         new_letters = letters ++ [ new_letter ]
-        new_misses = case miss of
-            False -> misses
-            True -> misses + 1
+        new_hits = case hit of
+            False -> hits
+            True -> hits + 1
     in
-       (new_letters, new_misses, guess)
+       (new_letters, new_hits, guess)
 
 
 update : Msg -> Model -> Model
@@ -71,8 +71,11 @@ update msg model =
 cleanUpdate : Char -> Model -> Model
 cleanUpdate guess model =
     let
-        (new_letters, new_misses, same_guess) =
-            List.foldl mapLetter ([], model.misses, guess) model.letters
+        (new_letters, hits, same_guess) =
+            List.foldl mapLetter ([], 0, guess) model.letters
+        new_misses = case hits > 0 of
+            True -> model.misses
+            False -> model.misses + 1
     in
         { model |
             misses = new_misses,
@@ -94,9 +97,18 @@ view model =
       , div [] [ text "TBD" ]
     ]
 
+ulStyle =
+  style
+    [ ("list-style-type", "none") ,
+      ("width", "100%"),
+      ("margin", "2em auto")]
+liStyle =
+  style
+    [ ("float", "left") ]
+
 stage: Model-> Html Msg
 stage model =
-    ul [] (List.map letter_view model.letters)
+    ul [ ulStyle ] (List.map letter_view model.letters)
 
 letter_view: Letter -> Html Msg
 letter_view letter =
@@ -106,5 +118,5 @@ letter_view letter =
                 True -> String.fromChar letter.letter
                 False -> "-"
     in
-        li [] [text the_letter]
+        li [ liStyle ] [text the_letter]
 
