@@ -1,4 +1,4 @@
-import Html exposing (Html, div, h1, input, text)
+import Html exposing (Html, div, h1, h2, input, text, li, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import String
@@ -60,7 +60,23 @@ view model =
   div []
     [
       h1 [] [ text "Hangman" ]
+      , h2 [] [ text (toString model.misses) ]
+      , stage model
       , input [ placeholder "Text to reverse", onInput Change ] []
       , div [] [ text "TBD" ]
     ]
+
+stage: Model-> Html Msg
+stage model =
+    ul [] (List.map letter_view model.letters)
+
+letter_view: Letter -> Html Msg
+letter_view letter =
+    let
+        the_letter =
+            case letter.guessed of
+                True -> String.fromChar letter.letter
+                False -> "-"
+    in
+        li [] [text the_letter]
 
