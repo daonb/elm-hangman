@@ -42,13 +42,25 @@ initialModel =
 
 
 type Msg
-  = Change String
+  = Guess String
+
+
+mapLetter : Int -> Char -> Letter -> (Letter, Int)
+mapLetter misses guess letter =
+    case letter.letter == guess && !letter.guessed of
+        false -> (letter, (misses + 1))
+        true -> ( { letter | guessed = true }, misses)
+
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
-    Change newContent ->
-      model
+    Guess guesses ->
+        let
+            accum : Int
+            new_misses = case 
+      { model | 
+        
 
 
 
@@ -62,7 +74,7 @@ view model =
       h1 [] [ text "Hangman" ]
       , h2 [] [ text (toString model.misses) ]
       , stage model
-      , input [ placeholder "Text to reverse", onInput Change ] []
+      , input [ placeholder "Text to reverse", onInput Guess ] []
       , div [] [ text "TBD" ]
     ]
 
